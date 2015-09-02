@@ -1,0 +1,46 @@
+<html>
+ <head>
+   <link rel="stylesheet" href="../airconsole-leaderboard.css">
+   <style>
+     body {
+       background-color: black;
+       color: white;
+       font-family: Arial;
+     }
+     h1 {
+       position: absolute;
+       top: 50%;
+       margin-top: -1em;
+       left: 0px;
+       width: 100%;
+       text-align: center;
+     }
+   </style>
+   <script type="text/javascript" src="http://www.airconsole.com/api/airconsole-1.2.1.js"></script>
+   <script type="text/javascript" src="../airconsole-leaderboard.js"></script>
+   <script type="text/javascript">
+
+     var airconsole;
+
+     function init() {
+       airconsole = new AirConsole({"orientation": "portrait"});
+       leaderboard = new AirConsoleLeaderboard(airconsole);
+       airconsole.onReady = function(code) {
+         leaderboard.onReady(code);
+       }
+
+       airconsole.onDeviceStateChange = function(device_id, data) {
+         leaderboard.onDeviceStateChange(device_id, data);
+       }
+     }
+
+     function win() {
+       airconsole.message(AirConsole.SCREEN, "win");
+     }
+   </script>
+ </head>
+ <body onload="init()">
+   <h1 ontouchstart="win()">Touch to win!</h1>
+   <div id="airconsole-leaderboard"></div>
+ </body>
+</html>

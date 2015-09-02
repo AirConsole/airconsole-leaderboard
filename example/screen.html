@@ -1,0 +1,66 @@
+<html>
+<head>
+  <script type="text/javascript" src="http://www.airconsole.com/api/airconsole-1.2.1.js"></script>
+  <script type="text/javascript" src="../airconsole-leaderboard.js"></script>
+  <link rel="stylesheet" href="../airconsole-leaderboard.css">
+  <script type="text/javascript">
+
+    var airconsole;
+    var leaderboard;
+    var game_running = false;
+
+    function init() {
+      airconsole = new AirConsole();
+      leaderboard = new AirConsoleLeaderboard(airconsole, {
+        "best_of": 3,
+        "onHide": startGame,
+        "show": true
+      });
+      airconsole.onReady = function(code) {
+        leaderboard.onReady(code);
+      };
+
+      airconsole.onDeviceStateChange = function(device_id, data) {
+        leaderboard.onDeviceStateChange(device_id, data);
+      };
+
+      airconsole.onMessage = function(from, data) {
+        if (game_running) {
+          game_running = false;
+          document.getElementById("message").innerText =
+              airconsole.getNickname(from) + " won this round!";
+          leaderboard.addPoints(from);
+          leaderboard.show();
+        }
+      }
+    };
+
+    function startGame() {
+      game_running = true;
+      document.getElementById("message").innerText =
+          "Touch the controller to win!";
+    };
+
+
+  </script>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial;
+    }
+    h1 {
+      position: absolute;
+      top: 50%;
+      margin-top: -1em;
+      left: 0px;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body onload="init()">
+  <h1 id="message">Loading ...</h1>
+  <div id="airconsole-leaderboard"></div>
+</body>
+</html>
