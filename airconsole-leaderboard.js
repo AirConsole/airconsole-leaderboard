@@ -252,7 +252,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
 AirConsoleLeaderboard.prototype.createControllerBestOf = function(best_of) {
   var button = document.createElement("div");
   button.className = "airconsole-leaderboard-controller-best-of-button";
-  button.innerText = best_of;
+  button.innerText = "BEST OF " + best_of;
   var me = this;
   button.addEventListener("touchstart", function() {
     me.requestBestOf_(best_of)
@@ -273,11 +273,19 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_place = document.createElement("div");
     this.controller_place.className =
         "airconsole-leaderboard-controller-place";
+    this.controller_place_text = document.createElement("div");
+    this.controller_place.appendChild(this.controller_place_text);
+    var pic = document.createElement("div");
+    pic.className = "airconsole-leaderboard-controller-place-picture";
+    pic.style.backgroundImage =
+        "url('" + this.airconsole.getProfilePicture(
+        this.airconsole.device_id, 96) + "')";
+    this.controller_place.appendChild(pic);
     this.root.appendChild(this.controller_place);
     this.controller_best_of_container = document.createElement("div");
     this.controller_best_of_container.className =
         "airconsole-leaderboard-controller-best-of";
-    this.controller_best_of_container.innerHTML = "Best of<br>"
+    this.controller_best_of_container.innerHTML = "SELECT A MODE<br>"
     this.root.appendChild(this.controller_best_of_container);
     this.controller_best_of_buttons = [];
     for (var i = 0; i < this.best_of_choices.length; ++i) {
@@ -286,7 +294,7 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_start = document.createElement("div");
     this.controller_start.className =
         "airconsole-leaderboard-controller-start";
-    this.controller_start.innerText = "Ready";
+    this.controller_start.innerText = "START";
     this.controller_start.addEventListener("touchstart", function() {
       var controller_data = me.getLeaderboardData_();
       var screen_data = me.getLeaderboardData_(AirConsole.SCREEN);
@@ -332,8 +340,8 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
           } else if (my_rank % 10 == 3 && my_rank != 13) {
             suffix = "rd";
           }
-          this.controller_place.innerHTML =
-              my_rank + "<span>" + suffix + "</span>";
+          this.controller_place_text.innerHTML =
+              my_rank + suffix + " place";
           break;
         }
       }
