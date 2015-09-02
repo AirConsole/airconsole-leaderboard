@@ -6,13 +6,56 @@
     left: 0px;
     width: 100%;
     height: 100%;
-    color: white;
+    color: #ffffff;
     background: #1f1f1f;
+    text-transform: uppercase;
+    text-align: center;
 }
 
 #airconsole-leaderboard.airconsole-leaderboard-show {
     display: block;
 }
+
+.airconsole-leaderboard-button {
+    color: #adee00;
+    border: 1px solid #adee00;
+}
+
+.airconsole-leaderboard-button-active {
+    background-color: #adee00;
+    color: #1f1f1f;
+}
+
+.airconsole-leaderboard-wait {
+    color: #adee00;
+}
+
+.airconsole-leaderboard-points {
+    background-image: url('point.png');
+}
+
+.airconsole-leaderboard-points-background {
+    background-image: url('point-background.png');
+}
+
+.airconsole-leaderboard-winner {
+    border: 1px solid #ffffff;
+}
+
+.airconsole-leaderboard-player {
+    border: 1px solid #3b3b3b;
+}
+
+.airconsole-leaderboard-ready {
+    color: #3b3b3b;
+    border: 1px solid #3b3b3b;
+}
+
+.airconsole-leaderboard-ready-active {
+    background-color: #adee00;
+}
+
+/* bellow should not be modified */
 
 .airconsole-leaderboard-controller-start {
     position: absolute;
@@ -24,14 +67,7 @@
     padding-bottom: 55px;
     font-weight: bold;
     font-size: 24px;
-    color: #adee00;
-    border: 1px solid #adee00;
     border-radius: 5px;
-}
-
-.airconsole-leaderboard-controller-start-ready {
-    background-color: #adee00;
-    color: #1f1f1f;
 }
 
 .airconsole-leaderboard-portrait .airconsole-leaderboard-controller-start {
@@ -51,6 +87,7 @@
     margin-left: -128px;
     text-align: center;
     color: #ffffff;
+    text-transform: none;
 }
 
 .airconsole-leaderboard-controller-place-picture {
@@ -97,19 +134,11 @@
 .airconsole-leaderboard-controller-best-of-button {
     margin-top: 8px;
     padding: 20px;
-    border: 1px solid #adee00;
     border-radius: 5px;
-    color: #adee00;
-}
-
-.airconsole-leaderboard-controller-best-of-button-active {
-    background-color: #adee00;
-    color: #1f1f1f !important;
 }
 
 .airconsole-leaderboard-controller-queue {
     font-size: 16px;
-    color: #ffffff;
     position: absolute;
     top: 50%;
     width: 256px;
@@ -119,6 +148,102 @@
     margin-left: -128px;
 }
 
-.airconsole-leaderboard-controller-queue span {
-    color: #adee00;
+.airconsole-leaderboard-screen-container {
+    display: inline-block;
+    margin-top: 50px;
+    text-align: center;
+}
+
+.airconsole-leaderboard-screen-title {
+    font-size: 32px;
+    margin-bottom: 16px;
+}
+
+.airconsole-leaderboard-screen-players {
+    display: inline-block;
+    transition: width 1s;
+}
+
+.airconsole-leaderboard-player {
+    height: 64px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    border-radius: 5px;
+}
+
+.airconsole-leaderboard-screen-player-picture {
+    position: absolute;
+    left: -1px;
+    top: -1px;
+    width: 64px;
+    height: 64px;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    border: 1px solid #3b3b3b;
+    border-radius: 5px;
+}
+
+.airconsole-leaderboard-player-nickname {
+    font-size: 24px;
+    position: absolute;
+    left: 80px;
+    width: 180px;
+    top: 18px;
+    text-transform: none;
+    text-align: center;
+}
+
+.airconsole-leaderboard-points-background {
+    position: absolute;
+    left: 260px;
+    right: 104px;
+    height: 40px;
+    background-position: 0px 50%;
+    top: 12px;
+}
+
+.airconsole-leaderboard-points {
+    position: absolute;
+    left: 260px;
+    height: 40px;
+    background-position: 0px 50%;
+    top: 12px;
+    transition: width 2s;
+}
+
+.airconsole-leaderboard-winner {
+    padding: 20px;
+    border-radius: 3px;
+}
+
+.airconsole-leaderboard-winner img {
+    margin: 16px;
+    border-radius: 5px;
+}
+
+.airconsole-leaderboard-ready {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 80px;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 38px;
+}
+
+.airconsole-leaderboard-ready-active {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 0%;
+}
+
+.airconsole-leaderboard-ready-text {
+    position: absolute;
+    top: 10px;
+    left: 0px;
+    width: 100%;
 }

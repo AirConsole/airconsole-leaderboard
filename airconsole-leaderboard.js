@@ -2,12 +2,14 @@ function AirConsoleLeaderboard(airconsole, config) {
   this.airconsole = airconsole;
   config = config || {}
   this.best_of_default = config["best_of"] || 3;
+  this.countdown_seconds = config["countdown"] || 5;
   this.onHide = config["onHide"];
   this.show_at_start_up = config["show"] == undefined ? true : config["show"];
   this.scores = {};
   this.root = document.getElementById("airconsole-leaderboard");
   this.best_of_choices = config["best_of_choices"] || [3, 5, 7]
   this.visible = false;
+  this.screen_instructions = config["screen_instructions"];
 }
 
 AirConsoleLeaderboard.prototype.addPoints = function(device_id, points) {
@@ -36,6 +38,7 @@ AirConsoleLeaderboard.prototype.show = function() {
 
 AirConsoleLeaderboard.prototype.onReady = function(code) {
   if (this.airconsole.device_id == AirConsole.SCREEN) {
+    this.screen_player_ready = {};
     if (this.show_at_start_up) {
       this.screenShow_();
     } else {
@@ -67,16 +70,44 @@ AirConsoleLeaderboard.prototype.onDeviceStateChange = function(from, data) {
     }
     if (screen_data["visible"]) {
       var all_accepted = true;
+      var one_accepted = false;
+      var max_score = 0;
       for (var i = 1; i < this.airconsole.devices.length; ++i) {
+        if (!this.airconsole.devices[i]) {
+          continue;
+        }
+        max_score = Math.max(max_score, this.scores[i] || 0);
         controller_data = this.getLeaderboardData_(i);
         if (controller_data["generation"] != screen_data["generation"] ||
             !this.deviceInitializedOrGone_(i)) {
           all_accepted = false;
-          break;
+        } else {
+          one_accepted = true;
         }
       }
       if (all_accepted) {
-        this.screenHide_();
+        this.screenHide_(max_score >= screen_data["best_of"]);
+      } else if (one_accepted && !this.countdown) {
+        var me = this;
+        this.countdown = window.setTimeout(function() {
+          var latest_screen_data = me.getLeaderboardData_();
+          latest_screen_data["force"] = true;
+          me.setLeaderboardData_(latest_screen_data);
+        }, this.countdown_seconds*1000);
+        this.showOrHide_();
+        for (var r = 0; r < this.airconsole.devices.length; ++r) {
+          if (r == from) {
+            continue;
+          }
+          var ready = this.screen_player_ready[r];
+          if (ready) {
+            ready.style.transition = "width " + this.countdown_seconds +
+                "s linear";
+            ready.style.width = "100%";
+          }
+        }
+      } else {
+        this.showOrHide_();
       }
     }
   } else if (from == AirConsole.SCREEN) {
@@ -90,6 +121,11 @@ AirConsoleLeaderboard.prototype.onDeviceStateChange = function(from, data) {
     if (controller_data["best_of"] == screen_data["best_of"]) {
       delete controller_data["best_of"];
       this.setLeaderboardData_(controller_data)
+    }
+    if (screen_data["force"] &&
+        screen_data["generation"] != controller_data["generation"]) {
+      controller_data["generation"] = screen_data["generation"];
+      this.setLeaderboardData_(controller_data);
     }
     this.showOrHide_();
   }
@@ -169,12 +205,31 @@ AirConsoleLeaderboard.prototype.screenShow_ = function() {
   if (!data["best_of"]) {
     data["best_of"] = this.best_of_default;
   }
+  for (var i = 0; i < this.airconsole.devices.length; ++i) {
+    var ready = this.screen_player_ready[i];
+    if (ready) {
+      ready.style.transition = "none";
+      ready.style.width = "0%";
+    }
+  }
   this.setLeaderboardData_(data);
   this.showOrHide_();
 };
 
-AirConsoleLeaderboard.prototype.screenHide_ = function() {
+AirConsoleLeaderboard.prototype.screenHide_ = function(done) {
+  if (this.countdown) {
+    window.clearTimeout(this.countdown);
+    this.countdown = undefined;
+  }
   var data = this.getLeaderboardData_();
+  if (done) {
+    this.scores = {};
+    data["scores"] = this.scores;
+    this.showOrHide_();
+  }
+  if (data["force"]) {
+    delete data["force"];
+  }
   data["visible"] = false;
   this.setLeaderboardData_(data);
   this.showOrHide_();
@@ -195,16 +250,22 @@ AirConsoleLeaderboard.prototype.deviceInitializedOrGone_ = function(
 AirConsoleLeaderboard.prototype.requestBestOf_ = function(best_of) {
   if (this.airconsole.device_id == AirConsole.SCREEN) {
     var pregame = true;
+    var data = this.getLeaderboardData_(AirConsole.SCREEN);
     for (var i = 1; i < this.airconsole.devices.length; ++i) {
       if (this.scores[i]) {
         pregame = false;
+      }
+      if (this.scores[i] >= data["best_of"]) {
+        pregame = true;
         break;
       }
     }
     if (pregame) {
-      var data = this.getLeaderboardData_(AirConsole.SCREEN);
       data["best_of"] = best_of;
+      this.scores = {};
+      data["scores"] = this.scores;
       this.setLeaderboardData_(data);
+      this.showOrHide_();
     }
   } else {
     var controller_data = this.getLeaderboardData_();
@@ -246,13 +307,107 @@ AirConsoleLeaderboard.prototype.render_ = function(screen_data,
 };
 
 AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
+  if (!this.screen_container) {
+    this.screen_container = document.createElement("div");
+    this.screen_container.className = "airconsole-leaderboard-screen-container";
+    this.screen_title = document.createElement("div");
+    this.screen_title.className = "airconsole-leaderboard-screen-title";
+    this.screen_container.appendChild(this.screen_title);
+    this.screen_players_container = document.createElement("div");
+    this.screen_players_container.className =
+        "airconsole-leaderboard-screen-players"
+    this.screen_container.appendChild(this.screen_players_container);
+    this.screen_player_points = {};
+    this.root.appendChild(this.screen_container);
+  }
 
+  var point_width = 40;
+  this.screen_players_container.style.width = (364 +
+      screen_data["best_of"] * point_width) + "px";
+  var winners = [];
+  for (var i = 1; i < this.airconsole.devices.length; ++i) {
+    var points = this.screen_player_points[i];
+    if (!points && this.airconsole.devices[i]) {
+      var player = document.createElement("div");
+      player.className = "airconsole-leaderboard-player";
+      var pic = document.createElement("div");
+      pic.className = "airconsole-leaderboard-screen-player-picture";
+      pic.style.backgroundImage = "url('" + this.airconsole.getProfilePicture(
+          i, 64) + "')";
+      player.appendChild(pic)
+      var name = document.createElement("div");
+      name.className = "airconsole-leaderboard-player-nickname";
+      name.innerText = this.airconsole.getNickname(i);
+      player.appendChild(name)
+      var points_bg = document.createElement("div");
+      points_bg = document.createElement("div");
+      points_bg.className = "airconsole-leaderboard-points-background";
+      player.appendChild(points_bg);
+      points = document.createElement("div");
+      points.className = "airconsole-leaderboard-points";
+      player.appendChild(points);
+      this.screen_player_points[i] = points;
+      var ready_container = document.createElement("div");
+      ready_container.className = "airconsole-leaderboard-ready";
+      var ready = document.createElement("div");
+      ready.className = "airconsole-leaderboard-ready-active";
+      ready_container.appendChild(ready)
+      var ready_text = document.createElement("div");
+      ready_text.className = "airconsole-leaderboard-ready-text";
+      ready_text.innerText = "Ready";
+      ready_container.appendChild(ready_text)
+      player.appendChild(ready_container);
+      this.screen_player_ready[i] = ready;
+      this.screen_players_container.appendChild(player);
+    }
+    var score = this.scores[i] || 0;
+    if (score >= screen_data["best_of"]) {
+      winners.push(i);
+    }
+    var ready = this.screen_player_ready[i];
+    if (ready) {
+      if (this.getLeaderboardData_(i)["generation"] ==
+          screen_data["generation"]) {
+        ready.style.transition = "none";
+        ready.style.width = "100%";
+      }
+    }
+  }
+  if (!winners.length) {
+    this.screen_title.innerText = "Leaderboard: Best of " +
+        screen_data["best_of"];
+  } else {
+    var winner_text = "";
+    var imgs = [];
+    for (var i = 0; i < winners.length; ++i) {
+      if (winner_text) {
+        winner_text = "We have some winners!";
+      } else {
+        winner_text = this.airconsole.getNickname(i) + " wins!";
+      }
+      imgs.push("<img width=128 height=128 src='" +
+                this.airconsole.getProfilePicture(i, 128) + "'>")
+    }
+    this.screen_title.innerHTML = "<div class=airconsole-leaderboard-winner>" +
+        imgs.join("") + "<br>" +  winner_text + "</div>";
+  }
+  var me = this;
+  window.setTimeout(function() {
+    for (var i = 1; i < me.airconsole.devices.length; ++i) {
+      var points = me.screen_player_points[i];
+      if (points) {
+        points.style.width = (Math.min(screen_data["best_of"],
+                              me.scores[i] || 0) * point_width) + "px";
+      }
+    }
+  }, 0);
 };
 
 AirConsoleLeaderboard.prototype.createControllerBestOf = function(best_of) {
   var button = document.createElement("div");
-  button.className = "airconsole-leaderboard-controller-best-of-button";
-  button.innerText = "BEST OF " + best_of;
+  button.className = "airconsole-leaderboard-controller-best-of-button " +
+      "airconsole-leaderboard-button";
+  button.innerText = "Best of " + best_of;
   var me = this;
   button.addEventListener("touchstart", function() {
     me.requestBestOf_(best_of)
@@ -268,7 +423,8 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_queue = document.createElement("div");
     this.controller_queue.className =
         "airconsole-leaderboard-controller-queue";
-    this.controller_queue.innerHTML = "<span>Waiting</span> for next round";
+    this.controller_queue.innerHTML =
+        "<span class='airconsole-leaderboard-wait'>Waiting</span> for next round";
     this.root.appendChild(this.controller_queue);
     this.controller_place = document.createElement("div");
     this.controller_place.className =
@@ -285,7 +441,7 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_best_of_container = document.createElement("div");
     this.controller_best_of_container.className =
         "airconsole-leaderboard-controller-best-of";
-    this.controller_best_of_container.innerHTML = "SELECT A MODE<br>"
+    this.controller_best_of_container.innerHTML = "Select a mode<br>"
     this.root.appendChild(this.controller_best_of_container);
     this.controller_best_of_buttons = [];
     for (var i = 0; i < this.best_of_choices.length; ++i) {
@@ -293,8 +449,9 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     }
     this.controller_start = document.createElement("div");
     this.controller_start.className =
-        "airconsole-leaderboard-controller-start";
-    this.controller_start.innerText = "START";
+        "airconsole-leaderboard-controller-start " +
+        "airconsole-leaderboard-button";
+    this.controller_start.innerText = "Ready";
     this.controller_start.addEventListener("touchstart", function() {
       var controller_data = me.getLeaderboardData_();
       var screen_data = me.getLeaderboardData_(AirConsole.SCREEN);
@@ -311,10 +468,10 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_start.style.display = "block";
     if (screen_data["generation"] != controller_data["generation"]) {
       this.removeClass_(this.controller_start,
-                        "airconsole-leaderboard-controller-start-ready");
+                        "airconsole-leaderboard-button-active");
     } else {
       this.addClass_(this.controller_start,
-                     "airconsole-leaderboard-controller-start-ready");
+                     "airconsole-leaderboard-button-active");
       this.controller_queue.style.display = "none";
     }
     var score_rank = [];
@@ -327,7 +484,7 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
       }
     }
     score_rank.sort(function(a, b){return b-a});
-    if (highest_score) {
+    if (highest_score && highest_score < screen_data["best_of"]) {
       var my_score = screen_data.scores[me.airconsole.device_id] || 0;
       for (var i = 0; i < score_rank.length; ++i) {
         if (my_score == score_rank[i]) {
@@ -353,10 +510,10 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
       var button = this.controller_best_of_buttons[i];
       if (screen_data["best_of"] == this.best_of_choices[i]) {
         this.addClass_(button,
-            "airconsole-leaderboard-controller-best-of-button-active");
+            "airconsole-leaderboard-button-active");
       } else {
         this.removeClass_(button,
-             "airconsole-leaderboard-controller-best-of-button-active");
+             "airconsole-leaderboard-button-active");
       }
     }
   } else {
