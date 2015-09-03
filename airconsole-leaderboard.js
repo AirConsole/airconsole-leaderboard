@@ -63,6 +63,12 @@ AirConsoleLeaderboard.prototype.onDeviceStateChange = function(from, data) {
   var screen_data = this.getLeaderboardData_(AirConsole.SCREEN);
   if (this.airconsole.device_id == AirConsole.SCREEN) {
     var controller_data = this.getLeaderboardData_(from);
+    if (screen_data["best_of"] == 0 && this.airconsole.devices.length > 2) {
+      screen_data["best_of"] = this.best_of_default;
+      this.scores = {};
+      screen_data["scores"] = this.scores;
+      this.setLeaderboardData_(screen_data);
+    }
     if (controller_data["request"]) {
       this.screenShow_();
     }
@@ -223,6 +229,9 @@ AirConsoleLeaderboard.prototype.screenShow_ = function() {
   data["visible"] = true;
   if (!data["best_of"]) {
     data["best_of"] = this.best_of_default;
+  }
+  if (this.airconsole.devices.length <= 2) {
+    data["best_of"] = 0;
   }
   for (var i = 0; i < this.airconsole.devices.length; ++i) {
     var ready = this.screen_player_ready[i];
@@ -406,7 +415,10 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
     }
   }
   this.screen_title.innerText = "Best of " + screen_data["best_of"];
-  if (!winners.length) {
+  if (!screen_data["best_of"]) {
+    this.screen_title.innerText = "Multiplayer is more fun!";
+  }
+  if (!winners.length || this.airconsole.devices.length <= 2) {
     if (this.instructions) {
       this.instructions.style.display = "block";
     }
@@ -421,10 +433,10 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       if (winner_text) {
         winner_text = "We have some winners!";
       } else {
-        winner_text = this.airconsole.getNickname(i) + " wins!";
+        winner_text = this.airconsole.getNickname(winners[i]) + " wins!";
       }
       imgs.push("<img width=128 height=128 src='" +
-                this.airconsole.getProfilePicture(i, 128) + "'>")
+                this.airconsole.getProfilePicture(winners[i], 128) + "'>")
     }
     this.screen_winner.innerHTML =
         imgs.join("") + "<br>" +  winner_text + "</div>";
@@ -521,13 +533,15 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     var highest_score = 0;
     for (var i = 1; i < this.airconsole.devices.length; ++i) {
       if (this.airconsole.devices[i]) {
-        var score = screen_data.scores[i] || 0
+        var score = screen_data.scores[i] || 0;
         highest_score = Math.max(score, highest_score);
         score_rank.push(score)
       }
     }
     score_rank.sort(function(a, b){return b-a});
-    if (highest_score && highest_score < screen_data["best_of"]) {
+    if (screen_data["best_of"] == 0) {
+      // nothing
+    } else if (highest_score && highest_score < screen_data["best_of"]) {
       var my_score = screen_data.scores[me.airconsole.device_id] || 0;
       for (var i = 0; i < score_rank.length; ++i) {
         if (my_score == score_rank[i]) {
