@@ -1,6 +1,4 @@
 #airconsole-leaderboard {
-    font-family: 'Play';
-    display: none;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -10,6 +8,23 @@
     background: #1f1f1f;
     text-transform: uppercase;
     text-align: center;
+    display: none;
+}
+
+#airconsole-leaderboard-instructions {
+    border-top: 1px solid #3b3b3b;
+    border-bottom: 1px solid #3b3b3b;
+    background-color: black;
+    text-transform: none;
+}
+
+.airconsole-leaderboard-winner {
+    border-top: 1px solid #3b3b3b;
+    border-bottom: 1px solid #3b3b3b;
+    padding: 20px 40px 40px 40px;
+    background-color: black;
+    text-transform: none;
+    font-size: 24px;
 }
 
 #airconsole-leaderboard.airconsole-leaderboard-show {
@@ -19,6 +34,7 @@
 .airconsole-leaderboard-button {
     color: #adee00;
     border: 1px solid #adee00;
+    background-color: #1b1b1b;
 }
 
 .airconsole-leaderboard-button-active {
@@ -38,10 +54,6 @@
     background-image: url('point-background.png');
 }
 
-.airconsole-leaderboard-winner {
-    border: 1px solid #ffffff;
-}
-
 .airconsole-leaderboard-player {
     border: 1px solid #3b3b3b;
 }
@@ -59,32 +71,33 @@
 
 .airconsole-leaderboard-controller-start {
     position: absolute;
-    margin-top: -64px;
-    width: 256px;
-    margin-left: -128px;
+    width: 220px;
+    margin-left: -110px;
     text-align: center;
     padding-top: 55px;
     padding-bottom: 55px;
     font-weight: bold;
     font-size: 24px;
     border-radius: 5px;
+    bottom: 20px;
 }
 
 .airconsole-leaderboard-portrait .airconsole-leaderboard-controller-start {
-    top: 75%;
     left: 50%;
+    transform-origin: 50% 100% 0;
+    -webkit-transform-origin: 50% 100% 0;
 }
 
 .airconsole-leaderboard-landscape .airconsole-leaderboard-controller-start {
     left: 75%;
-    top: 50%;
+    transform-origin: 50% 0% 0;
+    -webkit-transform-origin: 50% 0% 0;
 }
 
 .airconsole-leaderboard-controller-place {
     position: absolute;
-    margin-top: -64px;
-    width: 256px;
-    margin-left: -128px;
+    width: 220px;
+    margin-left: -110px;
     text-align: center;
     color: #ffffff;
     text-transform: none;
@@ -99,36 +112,39 @@
     border-radius: 5px;
     display: inline-block;
     margin: 4px;
+    transform-origin: 50% 0% 0;
+    -webkit-transform-origin: 50% 0% 0;
 }
 
 .airconsole-leaderboard-portrait .airconsole-leaderboard-controller-place {
-    top: 33%;
+    top: 20px;
     left: 50%;
 }
 
 .airconsole-leaderboard-landscape .airconsole-leaderboard-controller-place {
     left: 25%;
-    top: 50%;
+    bottom: 20px;
 }
 
 .airconsole-leaderboard-controller-best-of {
     font-size: 16px;
     position: absolute;
-    margin-top: -64px;
-    width: 256px;
-    margin-left: -128px;
+    width: 220px;
+    margin-left: -110px;
     text-align: center;
     color: #ffffff;
+    transform-origin: 50% 0% 0;
+    -webkit-transform-origin: 50% 0% 0;
 }
 
 .airconsole-leaderboard-portrait .airconsole-leaderboard-controller-best-of {
-    top: 25%;
+    top: 20px;
     left: 50%;
 }
 
 .airconsole-leaderboard-landscape .airconsole-leaderboard-controller-best-of {
     left: 25%;
-    top: 50%;
+    top: 20px;
 }
 
 .airconsole-leaderboard-controller-best-of-button {
@@ -148,9 +164,17 @@
     margin-left: -128px;
 }
 
+.airconsole-leaderboard-controller-container {
+    position: absolute;
+    width: 100%;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+}
+
 .airconsole-leaderboard-screen-container {
     display: inline-block;
-    margin-top: 50px;
+    margin-top: 20px;
     text-align: center;
 }
 
@@ -201,6 +225,7 @@
     right: 104px;
     height: 40px;
     background-position: 0px 50%;
+    background-repeat: repeat-x;
     top: 12px;
 }
 
@@ -209,13 +234,9 @@
     left: 260px;
     height: 40px;
     background-position: 0px 50%;
+    background-repeat: repeat-x;
     top: 12px;
     transition: width 2s;
-}
-
-.airconsole-leaderboard-winner {
-    padding: 20px;
-    border-radius: 3px;
 }
 
 .airconsole-leaderboard-winner img {

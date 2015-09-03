@@ -6,7 +6,7 @@
      body {
        background-color: black;
        color: white;
-       font-family: Arial;
+       font-family: 'Play';
      }
      h1 {
        position: absolute;
@@ -25,7 +25,9 @@
 
      function init() {
        airconsole = new AirConsole({"orientation": "portrait"});
-       leaderboard = new AirConsoleLeaderboard(airconsole);
+       leaderboard = new AirConsoleLeaderboard(airconsole, {
+         "best_of_choices": [3,5,100]
+       });
        airconsole.onReady = function(code) {
          leaderboard.onReady(code);
        }
@@ -42,6 +44,10 @@
  </head>
  <body onload="init()">
    <h1 ontouchstart="win()">Touch to win!</h1>
-   <div id="airconsole-leaderboard"></div>
+   <div id="airconsole-leaderboard">
+     <div id="airconsole-leaderboard-instructions">
+       <br><br>This is a test app<br><br>&nbsp;
+     </div>
+   </div>
  </body>
 </html>

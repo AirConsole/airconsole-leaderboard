@@ -9,7 +9,8 @@ function AirConsoleLeaderboard(airconsole, config) {
   this.root = document.getElementById("airconsole-leaderboard");
   this.best_of_choices = config["best_of_choices"] || [3, 5, 7]
   this.visible = false;
-  this.screen_instructions = config["screen_instructions"];
+  this.instructions = document.getElementById(
+      "airconsole-leaderboard-instructions");
 }
 
 AirConsoleLeaderboard.prototype.addPoints = function(device_id, points) {
@@ -167,12 +168,30 @@ AirConsoleLeaderboard.prototype.removeClass_ = function(el, name) {
 };
 
 AirConsoleLeaderboard.prototype.checkOrientation_ = function() {
+  var needed = 70 * this.best_of_choices.length;
   if (this.root.offsetHeight > this.root.offsetWidth) {
     this.addClass_(this.root, "airconsole-leaderboard-portrait");
     this.removeClass_(this.root, "airconsole-leaderboard-landscape");
+    needed += 256;
   } else {
     this.addClass_(this.root, "airconsole-leaderboard-landscape");
     this.removeClass_(this.root, "airconsole-leaderboard-portrait");
+    needed += 80;
+  }
+  if (this.visible && this.controller_best_of_container) {
+    var h = this.controller_container.offsetHeight;
+    var scale = "none";
+    if (h < needed) {
+      var scale = "scale(" + h / needed + ")"
+    }
+    this.controller_best_of_container.style.transform = scale;
+    this.controller_best_of_container.style.webkitTransform = scale;
+    if (this.root.offsetHeight <= this.root.offsetWidth) {
+      scale = "none";
+    }
+    this.controller_start.style.transform = scale;
+    this.controller_start.style.webkitTransform = scale;
+
   }
 }
 
@@ -308,6 +327,9 @@ AirConsoleLeaderboard.prototype.render_ = function(screen_data,
 
 AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
   if (!this.screen_container) {
+    this.screen_winner = document.createElement("div");
+    this.screen_winner.className = "airconsole-leaderboard-winner";
+    this.root.appendChild(this.screen_winner);
     this.screen_container = document.createElement("div");
     this.screen_container.className = "airconsole-leaderboard-screen-container";
     this.screen_title = document.createElement("div");
@@ -318,11 +340,16 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
         "airconsole-leaderboard-screen-players"
     this.screen_container.appendChild(this.screen_players_container);
     this.screen_player_points = {};
+    this.screen_player_points_bg = {};
     this.root.appendChild(this.screen_container);
   }
 
   var point_width = 40;
-  this.screen_players_container.style.width = (364 +
+  if (screen_data["best_of"] > 10) {
+    point_width = (400 / screen_data["best_of"]);
+
+  }
+  this.screen_players_container.style.width = (362 +
       screen_data["best_of"] * point_width) + "px";
   var winners = [];
   for (var i = 1; i < this.airconsole.devices.length; ++i) {
@@ -343,6 +370,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       points_bg = document.createElement("div");
       points_bg.className = "airconsole-leaderboard-points-background";
       player.appendChild(points_bg);
+      this.screen_player_points_bg[i] = points_bg;
       points = document.createElement("div");
       points.className = "airconsole-leaderboard-points";
       player.appendChild(points);
@@ -364,8 +392,11 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
     if (score >= screen_data["best_of"]) {
       winners.push(i);
     }
-    var ready = this.screen_player_ready[i];
-    if (ready) {
+    if (points) {
+      points.style.backgroundSize = point_width + "px " + point_width + "px";
+      this.screen_player_points_bg[i].style.backgroundSize =
+          point_width + "px " + point_width + "px";
+      var ready = this.screen_player_ready[i];
       if (this.getLeaderboardData_(i)["generation"] ==
           screen_data["generation"]) {
         ready.style.transition = "none";
@@ -373,10 +404,16 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       }
     }
   }
+  this.screen_title.innerText = "Best of " + screen_data["best_of"];
   if (!winners.length) {
-    this.screen_title.innerText = "Leaderboard: Best of " +
-        screen_data["best_of"];
+    if (this.instructions) {
+      this.instructions.style.display = "block";
+    }
+    this.screen_winner.style.display = "none";
   } else {
+    if (this.instructions) {
+      this.instructions.style.display = "none";
+    }
     var winner_text = "";
     var imgs = [];
     for (var i = 0; i < winners.length; ++i) {
@@ -388,8 +425,9 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       imgs.push("<img width=128 height=128 src='" +
                 this.airconsole.getProfilePicture(i, 128) + "'>")
     }
-    this.screen_title.innerHTML = "<div class=airconsole-leaderboard-winner>" +
+    this.screen_winner.innerHTML =
         imgs.join("") + "<br>" +  winner_text + "</div>";
+    this.screen_winner.style.display = "block";
   }
   var me = this;
   window.setTimeout(function() {
@@ -419,13 +457,16 @@ AirConsoleLeaderboard.prototype.createControllerBestOf = function(best_of) {
 AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
                                                              controller_data) {
   var me = this;
-  if (!this.controller_start) {
+  if (!this.controller_container) {
+    this.controller_container = document.createElement("div");
+    this.controller_container.className =
+        "airconsole-leaderboard-controller-container";
     this.controller_queue = document.createElement("div");
     this.controller_queue.className =
         "airconsole-leaderboard-controller-queue";
     this.controller_queue.innerHTML =
         "<span class='airconsole-leaderboard-wait'>Waiting</span> for next round";
-    this.root.appendChild(this.controller_queue);
+    this.controller_container.appendChild(this.controller_queue);
     this.controller_place = document.createElement("div");
     this.controller_place.className =
         "airconsole-leaderboard-controller-place";
@@ -437,12 +478,12 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
         "url('" + this.airconsole.getProfilePicture(
         this.airconsole.device_id, 96) + "')";
     this.controller_place.appendChild(pic);
-    this.root.appendChild(this.controller_place);
+    this.controller_container.appendChild(this.controller_place);
     this.controller_best_of_container = document.createElement("div");
     this.controller_best_of_container.className =
         "airconsole-leaderboard-controller-best-of";
     this.controller_best_of_container.innerHTML = "Select a mode<br>"
-    this.root.appendChild(this.controller_best_of_container);
+    this.controller_container.appendChild(this.controller_best_of_container);
     this.controller_best_of_buttons = [];
     for (var i = 0; i < this.best_of_choices.length; ++i) {
       this.createControllerBestOf(this.best_of_choices[i]);
@@ -459,7 +500,8 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
       me.setLeaderboardData_(controller_data);
       me.showOrHide_();
     });
-    this.root.appendChild(this.controller_start);
+    this.controller_container.appendChild(this.controller_start);
+    this.root.appendChild(this.controller_container);
   }
   this.controller_place.style.display = "none";
   this.controller_best_of_container.style.display = "none";
@@ -520,4 +562,10 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_start.style.display = "none";
     this.controller_queue.style.display = "block";
   }
+  if (this.instructions) {
+    this.controller_container.style.top = this.instructions.offsetHeight + "px";
+  }
+  window.setTimeout(function() {
+    me.checkOrientation_();
+  })
 };
