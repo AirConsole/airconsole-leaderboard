@@ -344,12 +344,13 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
     this.root.appendChild(this.screen_container);
   }
 
+  var max_width = (this.root.offsetWidth || window.innerWidth) - 400;
   var point_width = 40;
-  if (screen_data["best_of"] > 10) {
-    point_width = (400 / screen_data["best_of"]);
+  if (screen_data["best_of"]*point_width > max_width) {
+    point_width = (max_width / screen_data["best_of"]) | 0;
 
   }
-  this.screen_players_container.style.width = (362 +
+  this.screen_players_container.style.width = (366 +
       screen_data["best_of"] * point_width) + "px";
   var winners = [];
   for (var i = 1; i < this.airconsole.devices.length; ++i) {
@@ -393,7 +394,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       winners.push(i);
     }
     if (points) {
-      points.style.backgroundSize = point_width + "px " + point_width + "px";
+      points.style.backgroundSize = point_width + "px";
       this.screen_player_points_bg[i].style.backgroundSize =
           point_width + "px " + point_width + "px";
       var ready = this.screen_player_ready[i];
