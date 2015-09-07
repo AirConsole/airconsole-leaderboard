@@ -377,7 +377,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       player.appendChild(pic)
       var name = document.createElement("div");
       name.className = "airconsole-leaderboard-player-nickname";
-      name.innerText = this.airconsole.getNickname(i);
+      name.innerHTML = this.airconsole.getNickname(i);
       player.appendChild(name)
       var points_bg = document.createElement("div");
       points_bg = document.createElement("div");
@@ -395,7 +395,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       ready_container.appendChild(ready)
       var ready_text = document.createElement("div");
       ready_text.className = "airconsole-leaderboard-ready-text";
-      ready_text.innerText = "Ready";
+      ready_text.innerHTML = "Ready";
       ready_container.appendChild(ready_text)
       player.appendChild(ready_container);
       this.screen_player_ready[i] = ready;
@@ -417,9 +417,9 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       }
     }
   }
-  this.screen_title.innerText = "Best of " + screen_data["best_of"];
+  this.screen_title.innerHTML = "Best of " + screen_data["best_of"];
   if (!screen_data["best_of"]) {
-    this.screen_title.innerText = "Multiplayer is more fun!";
+    this.screen_title.innerHTML = "Multiplayer is more fun!";
   }
   if (!winners.length || this.airconsole.devices.length <= 2) {
     if (this.instructions) {
@@ -461,7 +461,7 @@ AirConsoleLeaderboard.prototype.createControllerBestOf = function(best_of) {
   var button = document.createElement("div");
   button.className = "airconsole-leaderboard-controller-best-of-button " +
       "airconsole-leaderboard-button";
-  button.innerText = "Best of " + best_of;
+  button.innerHTML = "Best of " + best_of;
   var me = this;
   button.addEventListener("touchstart", function() {
     me.requestBestOf_(best_of)
@@ -508,7 +508,7 @@ AirConsoleLeaderboard.prototype.renderController_ = function(screen_data,
     this.controller_start.className =
         "airconsole-leaderboard-controller-start " +
         "airconsole-leaderboard-button";
-    this.controller_start.innerText = "Ready";
+    this.controller_start.innerHTML = "Ready";
     this.controller_start.addEventListener("touchstart", function() {
       var controller_data = me.getLeaderboardData_();
       var screen_data = me.getLeaderboardData_(AirConsole.SCREEN);

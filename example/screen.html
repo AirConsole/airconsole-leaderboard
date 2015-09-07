@@ -27,7 +27,7 @@
       airconsole.onMessage = function(from, data) {
         if (game_running) {
           game_running = false;
-          document.getElementById("message").innerText =
+          document.getElementById("message").innerHTML =
               airconsole.getNickname(from) + " won this round!";
           leaderboard.addPoints(from);
           leaderboard.show();
@@ -37,7 +37,7 @@
 
     function startGame() {
       game_running = true;
-      document.getElementById("message").innerText =
+      document.getElementById("message").innerHTML =
           "Touch the controller to win!";
     };
 
