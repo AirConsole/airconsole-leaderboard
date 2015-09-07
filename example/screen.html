@@ -14,9 +14,7 @@
       airconsole = new AirConsole();
       leaderboard = new AirConsoleLeaderboard(airconsole, {
         "best_of": 3,
-        "onHide": startGame,
-        "show": true,
-        "screen_instructions": "<h1>My custom instructions would go here</h1>"
+        "onHide": startGame
       });
       airconsole.onReady = function(code) {
         leaderboard.onReady(code);

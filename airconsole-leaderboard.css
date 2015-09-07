@@ -79,19 +79,21 @@
     font-weight: bold;
     font-size: 24px;
     border-radius: 5px;
-    bottom: 20px;
 }
 
 .airconsole-leaderboard-portrait .airconsole-leaderboard-controller-start {
     left: 50%;
     transform-origin: 50% 100% 0;
     -webkit-transform-origin: 50% 100% 0;
+    bottom: 20px;
 }
 
 .airconsole-leaderboard-landscape .airconsole-leaderboard-controller-start {
     left: 75%;
     transform-origin: 50% 0% 0;
     -webkit-transform-origin: 50% 0% 0;
+    top: 50%;
+    margin-top: -72px;
 }
 
 .airconsole-leaderboard-controller-place {
@@ -123,7 +125,8 @@
 
 .airconsole-leaderboard-landscape .airconsole-leaderboard-controller-place {
     left: 25%;
-    bottom: 20px;
+    top: 50%;
+    margin-top: -80px;
 }
 
 .airconsole-leaderboard-controller-best-of {

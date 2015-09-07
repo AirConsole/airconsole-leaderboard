@@ -59,10 +59,10 @@ AirConsoleLeaderboard.prototype.onReady = function(code) {
 };
 
 
-AirConsoleLeaderboard.prototype.onDeviceStateChange = function(from, data) {
+AirConsoleLeaderboard.prototype.onDeviceStateChange = function(device_id, data) {
   var screen_data = this.getLeaderboardData_(AirConsole.SCREEN);
   if (this.airconsole.device_id == AirConsole.SCREEN) {
-    var controller_data = this.getLeaderboardData_(from);
+    var controller_data = this.getLeaderboardData_(device_id);
     if (screen_data["best_of"] == 0 && this.airconsole.devices.length > 2) {
       screen_data["best_of"] = this.best_of_default;
       this.scores = {};
@@ -103,7 +103,7 @@ AirConsoleLeaderboard.prototype.onDeviceStateChange = function(from, data) {
         }, this.countdown_seconds*1000);
         this.showOrHide_();
         for (var r = 0; r < this.airconsole.devices.length; ++r) {
-          if (r == from) {
+          if (r == device_id) {
             continue;
           }
           var ready = this.screen_player_ready[r];
@@ -117,7 +117,7 @@ AirConsoleLeaderboard.prototype.onDeviceStateChange = function(from, data) {
         this.showOrHide_();
       }
     }
-  } else if (from == AirConsole.SCREEN) {
+  } else if (device_id == AirConsole.SCREEN) {
     var controller_data = this.getLeaderboardData_();
     if (screen_data["visible"]) {
       if (controller_data["request"]) {
@@ -223,6 +223,9 @@ AirConsoleLeaderboard.prototype.setLeaderboardData_ = function(leaderboard) {
 };
 
 AirConsoleLeaderboard.prototype.screenShow_ = function() {
+  if (this.visible) {
+    return;
+  }
   var data = this.getLeaderboardData_();
   data["generation"] = new Date().getTime();
   data["scores"] = this.scores;
@@ -327,7 +330,7 @@ AirConsoleLeaderboard.prototype.render_ = function(screen_data,
       me.checkOrientation_()
     });
   }
-  if (airconsole.device_id == AirConsole.SCREEN) {
+  if (this.airconsole.device_id == AirConsole.SCREEN) {
     this.renderScreen_(screen_data);
   } else {
     this.renderController_(screen_data, controller_data);
