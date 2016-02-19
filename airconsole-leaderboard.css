@@ -176,9 +176,9 @@
 }
 
 .airconsole-leaderboard-screen-container {
-    display: inline-block;
     margin-top: 20px;
     text-align: center;
+    transform-origin: 50% 0;
 }
 
 .airconsole-leaderboard-screen-title {
@@ -186,18 +186,17 @@
     margin-bottom: 16px;
 }
 
-.airconsole-leaderboard-screen-players {
-    display: inline-block;
-    transition: width 1s;
-}
-
 .airconsole-leaderboard-player {
     height: 64px;
     position: relative;
     overflow: hidden;
-    margin-top: 8px;
-    margin-bottom: 24px;
+    margin-top: 4px;
+    margin-bottom: 20px;
     border-radius: 5px;
+    margin-left: 12px;
+    margin-right: 12px;
+    display: inline-block;
+    transition: width 1s;
 }
 
 .airconsole-leaderboard-screen-player-picture {

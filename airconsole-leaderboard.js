@@ -348,21 +348,32 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
     this.screen_title.className = "airconsole-leaderboard-screen-title";
     this.screen_container.appendChild(this.screen_title);
     this.screen_players_container = document.createElement("div");
-    this.screen_players_container.className =
-        "airconsole-leaderboard-screen-players"
     this.screen_container.appendChild(this.screen_players_container);
     this.screen_player_points = {};
     this.screen_player_points_bg = {};
+    this.screen_player_divs = {};
     this.root.appendChild(this.screen_container);
   }
-
-  var max_width = (this.root.offsetWidth || window.innerWidth) - 400;
+  var me = this;
+  window.setTimeout(function() {
+    var available_height = (me.root.offsetHeight || window.innerHeight) - 24;
+    if (me.instructions) {
+      available_height -= me.instructions.offsetHeight;
+    }
+    if (me.screen_container.offsetHeight > available_height) {
+      me.screen_container.style.transform = "scale(" +
+          (available_height / me.screen_container.offsetHeight) + ")";
+    } else {
+      me.screen_container.style.transform = "none";
+    }
+  });
+  var max_width = (this.root.offsetWidth || window.innerWidth)/2 - 396;
   var point_width = 40;
   if (screen_data["best_of"]*point_width > max_width) {
     point_width = (max_width / screen_data["best_of"]) | 0;
 
   }
-  this.screen_players_container.style.width = (366 +
+  var player_width = (364 +
       screen_data["best_of"] * point_width) + "px";
   var winners = [];
   for (var i = 1; i < this.airconsole.devices.length; ++i) {
@@ -400,6 +411,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
       player.appendChild(ready_container);
       this.screen_player_ready[i] = ready;
       this.screen_players_container.appendChild(player);
+      this.screen_player_divs[i] = player;
     }
     var score = this.scores[i] || 0;
     if (score >= screen_data["best_of"]) {
@@ -415,6 +427,7 @@ AirConsoleLeaderboard.prototype.renderScreen_ = function(screen_data) {
         ready.style.transition = "none";
         ready.style.width = "100%";
       }
+      this.screen_player_divs[i].style.width = player_width;
     }
   }
   this.screen_title.innerHTML = "Best of " + screen_data["best_of"];
